@@ -1,46 +1,39 @@
 import { PrismaClient } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: NextRequest) {
-    let email = "";
-    let password = "";
+export async function POST(req: Request) {
+
+    let email = '';
+    let password = '';
 
     try {
         const body = await req.json();
         email = body.email;
         password = body.password;
     } catch (error) {
-        return NextResponse.json({ Message: "Invalid JSON format" });
+        return NextResponse.json({ error: "Invalid JSON format" }, { status: 400 });
     }
 
-    if (!email) {
-        return NextResponse.json({ Message: "Please enter your email" });
-    } else if (!password) {
-        return NextResponse.json({ Message: "Please enter your password" });
+    if (!email || !password) {
+        return NextResponse.json({ error: "Email and passwords are requid" }, { status: 400 })
     }
 
-    const existingUser = await prisma.user.findUnique({
-        where: { email }
-    });
+    const Existinguser = await prisma.user.findUnique(
+        { where: { email } }
+    )
 
-    if (existingUser) {
-        return NextResponse.json({ Message: "User already exists" });
+    if (Existinguser) {
+        return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
-
-    // Hash password before storing
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
         data: {
             email,
-            password: hashedPassword,
-        },
-    });
+            password
+        }
+    })
 
-    console.log("User created:", user);
-
-    return NextResponse.json({ user, Message: "User created successfully" });
+    return NextResponse.json({ user, Message: "User created" }, { status: 201 })
 }

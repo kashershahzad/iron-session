@@ -1,5 +1,5 @@
 import React from 'react'
-import SignUpPage from '@/app/Signup/page'
+import SignUpPage from '@/app/signup/page'
 
 const page = () => {
   return (
